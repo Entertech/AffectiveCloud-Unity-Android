@@ -52,7 +52,7 @@ namespace Enter.Assets.Scripts
                 {
                     // 构造器写法 此处订阅了eeg和hr
                     bioSubscribe = bioBuilderObject.Call<AndroidJavaObject>("requestEEG")
-                                                    .Call<AndroidJavaObject>("requestHr")
+                                                    .Call<AndroidJavaObject>("requestHR")
                                                         .Call<AndroidJavaObject>("build");
                     bioService.Call<bool>("add", serviceEnum.GetStatic<AndroidJavaObject>("EEG"));
                     bioService.Call<bool>("add", serviceEnum.GetStatic<AndroidJavaObject>("HR"));

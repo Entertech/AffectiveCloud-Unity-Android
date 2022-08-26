@@ -74,7 +74,7 @@ namespace Enter.Assets.Scripts
             try
             {
                 //此处是心率解析
-                // var realtimeHrData = jo.Get<AndroidJavaObject>("RealtimeHrData");
+                // var realtimeHrData = jo.Get<AndroidJavaObject>("realtimeHrData");
                 // if (realtimeHrData != null)
                 // {
                 //     var hrObject = realtimeHrData.Get<AndroidJavaObject>("hr");
@@ -83,10 +83,10 @@ namespace Enter.Assets.Scripts
                 //     var hrvObject = realtimeHrData.Get<AndroidJavaObject>("hrv");
                 //     var hrv = hrvObject.Call<int>("intValue");//心率变异性
                 // }
-                var realtimeEEGData = jo.Get<AndroidJavaObject>("RealtimeEEGData");
+                var realtimeEEGData = jo.Get<AndroidJavaObject>("realtimeEEGData");
                 if (realtimeEEGData != null)
                 {
-                    using (var leftObject = realtimeEEGData.Get<AndroidJavaObject>("eeglWave"))
+                    using (var leftObject = realtimeEEGData.Get<AndroidJavaObject>("leftwave"))
                     {
                         int leftCount = leftObject.Call<int>("size");
 
@@ -99,7 +99,7 @@ namespace Enter.Assets.Scripts
 
                         }
                     }
-                    using (var rightObject = realtimeEEGData.Get<AndroidJavaObject>("eegrWave"))
+                    using (var rightObject = realtimeEEGData.Get<AndroidJavaObject>("rightwave"))
                     {
                         int rightCount = rightObject.Call<int>("size");
                         for (int i = 0; i < rightCount; i += 2)
@@ -111,7 +111,7 @@ namespace Enter.Assets.Scripts
 
                         }
                     }
-                    using (var quality = realtimeEEGData.Get<AndroidJavaObject>("eegQuality"))
+                    using (var quality = realtimeEEGData.Get<AndroidJavaObject>("quality"))
                     {
                         AffectiveCloudGloble.SharedInstance.quality = quality.Call<int>("intValue");
                         if (AffectiveCloudGloble.SharedInstance.quality < 2) {
