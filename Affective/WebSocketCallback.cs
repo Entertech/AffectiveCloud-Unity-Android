@@ -12,6 +12,9 @@ namespace Enter.Assets.Scripts
     }
     public delegate void OnWebsocketChanged(WebSocketState state);
     public delegate void OnWebsocketDebug(string data);
+    public delegate void OnSessionCreated(bool flag);
+    public delegate void OnSessionClosed();
+    public delegate void OnReportCreated(int index);
     /// <summary>
     /// websocket request 回调
     /// </summary>

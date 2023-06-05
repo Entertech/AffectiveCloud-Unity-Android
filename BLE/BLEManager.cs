@@ -63,8 +63,12 @@ namespace Enter.Assets.Scripts
         /// <returns></returns>
         public bool initializeJavaObject(ref AndroidJavaObject currentActivity)
         {
+            if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+            {
+                return false;
+            }
             if (currentActivity == null) {
-                AndroidJavaExtention.instance.toastText("currentActivity is null", active);
+                debugDelegate("currentActivity is null");
                 return false;
             } else {
                 active = currentActivity;
@@ -118,7 +122,7 @@ namespace Enter.Assets.Scripts
                                     ref ConnectFailedCallback connectFailedCallback
                                     )
         {
-
+            debugDelegate("start connect");
             if (ble != null)
             {
                 try
@@ -139,6 +143,7 @@ namespace Enter.Assets.Scripts
             }
             else
             {
+                debugDelegate("ble is null");
                 // 进行异常处理
 
             }
@@ -150,6 +155,30 @@ namespace Enter.Assets.Scripts
         public void bleDisconnect()
         {
             ble.Call("disConnect");
+        }
+
+        ///添加监听
+        public void addListener(ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
+        {
+            try
+            {
+                ble.Call("addDisConnectListener", disCall);
+                ble.Call("addConnectListener", contactCall);
+                ble.Call("addBatteryVoltageListener", batteryCall);
+            }
+            catch (Exception ex)
+            {
+                // 进行异常处理
+                debugDelegate(ex.Message);
+            }
+            
+        }
+        /// 移除监听
+        public void removeListener(ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
+        {
+            ble.Call("removeDisConnectListener", disCall);
+            ble.Call("removeContactListener", contactCall);
+            ble.Call("removeBatteryVoltageListener", batteryCall);
         }
 
         /// <summary>
@@ -167,20 +196,40 @@ namespace Enter.Assets.Scripts
             }
 
             ble.Call("addRawDataListener4CSharp", rawBrainDataCallback);
-            ble.Call("startBrainCollection");
-
-            // ble.Call("addHeartRateListener", heartRateDataCallback);
-            // ble.Call("startHeartRateCollection");
+            try
+            { 
+                ble.Call("addHeartRateListener", heartRateDataCallback);
+            }
+            catch (Exception e)
+            {  
+                debugDelegate(e.ToString());
+            }
+            ble.Call("startHeartAndBrainCollection");
 
         }
 
         /// <summary>
         /// 停止蓝牙服务
+        /// 传入参数为bleProcess的参数
         /// </summary>
-        public void bleStop()
+        public void bleStop(ref RawBrainDataCallback rawBrainDataCallback, ref HeartRateDataCallback heartRateDataCallback)
         {
-            ble.Call("stopBrainCollection");
-            // ble.Call("stopHeartRateCollection");
+            if (ble == null)
+            {
+                // 未初始化，进行异常处理
+                return;
+            }
+
+            ble.Call("removeRawDataListener4CSharp", rawBrainDataCallback);
+            try
+            { 
+                ble.Call("removeHeartRateListener", heartRateDataCallback);
+            }
+            catch (Exception e)
+            {  
+                debugDelegate(e.ToString());
+            }
+            ble.Call("stopHeartAndBrainCollection");
         }
 
         public bool bIsConnected = false;

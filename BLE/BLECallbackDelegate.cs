@@ -6,28 +6,33 @@ using System.Threading;
 
 namespace Enter.Assets.Scripts
 {
+    public enum BluetoothState
+    {
+        scan,
+        connecting,
+        connected,
+        disconnecting,
+        disconnected,
+    }
 
-    public delegate void OnBLEChanged(string state);
-    
+    public delegate void OnBLEChanged(BluetoothState state);
+    public delegate void OnEEGChanged(AndroidJavaObject eeg);
+    public delegate void OnHRChanged(int hr);
+
+    public delegate void OnContactChanged(string value);
+    public delegate void OnBatteryChanged(double value);
     /// <summary>
     /// 蓝牙扫描到设备回调
     /// </summary>
     public class BleScanSuccessCallback : AndroidJavaProxy
     {
-        Text objects;
-
-
+        public event OnBLEChanged bleChangedDelegate;
         /// <summary>
-        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示
         /// kotlin.jvm.functions.Function0 表示无参数回调
-        /// </summary>
-        /// <param name="list">需要获取的信息</param>
-        /// <param name="obj">安卓的activity界面</param>
-        /// <returns></returns>
-        public BleScanSuccessCallback(ref Text obj) : base("kotlin.jvm.functions.Function0")
+        public BleScanSuccessCallback() : base("kotlin.jvm.functions.Function0")
         {
-            objects = obj;
+            
         }
 
         /// <summary>
@@ -35,7 +40,7 @@ namespace Enter.Assets.Scripts
         /// </summary>
         public void invoke()
         {
-            
+            bleChangedDelegate(BluetoothState.connecting);
             
         }
     }
@@ -46,21 +51,14 @@ namespace Enter.Assets.Scripts
     public class BleScanFailedCallback : AndroidJavaProxy
     {
 
-        Text log;
-
-        public event OnBLEChanged BLEChangedDelegate;
+        public event OnBLEChanged bleChangedDelegate;
         /// <summary>
         /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
         /// kotlin.jvm.functions.Function1 表示回调有1个参数
-        /// </summary>
-        /// <param name="list">需要获取的信息</param>
-        /// <param name="obj">安卓的activity界面</param>
         /// <returns></returns>
-        public BleScanFailedCallback(ref Text text) : base("kotlin.jvm.functions.Function1")
+        public BleScanFailedCallback() : base("kotlin.jvm.functions.Function1")
         {
-
-            log = text;
+            
         }
 
         /// <summary>
@@ -69,31 +67,25 @@ namespace Enter.Assets.Scripts
         public void invoke(AndroidJavaObject error)
         {
             
-            // var sprite = Resources.Load<Sprite>("Disconnect");
-            // objects.image.sprite = sprite;
-            BLEChangedDelegate("Disconnect");
-            log.text = "Scan Failed";
+
+            bleChangedDelegate(BluetoothState.disconnected);
+
         }
     }
-
+    /// <summary>
+    /// 连接成功回调
+    /// </summary>
     public class ConnectSuccessCallback : AndroidJavaProxy
     {
-
-        Text log;
-        public event OnBLEChanged BLEChangedDelegate;
+        public event OnBLEChanged bleChangedDelegate;
         
         /// <summary>
         /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
         /// kotlin.jvm.functions.Function1 表示回调有1个参数
-        /// </summary>
-        /// <param name="list">需要获取的信息</param>
-        /// <param name="obj">安卓的activity界面</param>
-        /// <returns></returns>
-        public ConnectSuccessCallback(ref Text text) : base("kotlin.jvm.functions.Function1")
+
+        public ConnectSuccessCallback() : base("kotlin.jvm.functions.Function1")
         {
 
-            log = text;
         }
 
         /// <summary>
@@ -101,31 +93,67 @@ namespace Enter.Assets.Scripts
         /// </summary>
         public void invoke(string result)
         {
-            log.text = "Connected";
-            BLEChangedDelegate("Connected");
-            // var sprite = Resources.Load<Sprite>("Connected");
-            // objects.image.sprite = sprite;
-            
+            bleChangedDelegate(BluetoothState.connected);
+        }
+    }
+    /// <summary>
+    /// 发起连接失败回调
+    /// </summary>
+    public class ConnectFailedCallback : AndroidJavaProxy
+    {
+        public event OnBLEChanged bleChangedDelegate;
+        /// <summary>
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
+        /// kotlin.jvm.functions.Function1 表示回调有1个参数
+
+        public ConnectFailedCallback() : base("kotlin.jvm.functions.Function1")
+        {
+        }
+
+        /// <summary>
+        /// 回调触发
+        /// </summary>
+        public void invoke(string result)
+        {
+            bleChangedDelegate(BluetoothState.disconnected);
+        }
+    }
+    
+    /// <summary>
+    /// 连接断开回调
+    /// </summary>
+    public class DisconnectCallback : AndroidJavaProxy
+    {
+        public event OnBLEChanged bleChangedDelegate;
+        /// <summary>
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
+        /// kotlin.jvm.functions.Function1 表示回调有1个参数
+
+        public DisconnectCallback() : base("kotlin.jvm.functions.Function1")
+        {
+        }
+
+        /// <summary>
+        /// 回调触发
+        /// </summary>
+        public void invoke(string result)
+        {
+            bleChangedDelegate(BluetoothState.disconnected);
         }
     }
 
-    public class ConnectFailedCallback : AndroidJavaProxy
+    /// <summary>
+    /// 佩戴检测回调
+    /// </summary>
+    public class ContactCallback : AndroidJavaProxy
     {
-
-        Text log;
-        public event OnBLEChanged BLEChangedDelegate;
+        public event OnContactChanged contactDelegate;
         /// <summary>
         /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
         /// kotlin.jvm.functions.Function1 表示回调有1个参数
-        /// </summary>
-        /// <param name="list">需要获取的信息</param>
-        /// <param name="obj">安卓的activity界面</param>
-        /// <returns></returns>
-        public ConnectFailedCallback(ref Text text) : base("kotlin.jvm.functions.Function1")
-        {
 
-            log = text;
+        public ContactCallback() : base("kotlin.jvm.functions.Function1")
+        {
         }
 
         /// <summary>
@@ -133,10 +161,29 @@ namespace Enter.Assets.Scripts
         /// </summary>
         public void invoke(string result)
         {
-            BLEChangedDelegate("Disconnect");
-            // var sprite = Resources.Load<Sprite>("Disconnect");
-            // objects.image.sprite = sprite;
-            log.text = "Connect Failed";
+            contactDelegate(result);
+        }
+    }
+    /// <summary>
+    /// 电量回调
+    /// </summary>
+    public class BatteryCallback : AndroidJavaProxy
+    {
+        public event OnBatteryChanged batteryDelegate;
+        /// <summary>
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示
+        /// kotlin.jvm.functions.Function1 表示回调有1个参数
+
+        public BatteryCallback() : base("kotlin.jvm.functions.Function1")
+        {
+        }
+
+        /// <summary>
+        /// 回调触发
+        /// </summary>
+        public void invoke(double result)
+        {
+            batteryDelegate(result);
         }
     }
 
@@ -145,26 +192,14 @@ namespace Enter.Assets.Scripts
     /// </summary>
     public class RawBrainDataCallback : AndroidJavaProxy
     {
-        public event OnBLEChanged BLEChangedDelegate;
+        public event OnEEGChanged eegChangedDelegate;
         public RawBrainDataCallback() : base("kotlin.jvm.functions.Function1")
         {
             
         }
         public void invoke(AndroidJavaObject eeg)
         {
-            try
-            {
-                
-                if (AffectiveManager.instance.bIsInit())
-                {
-                    
-                    AffectiveManager.instance.appendEeg(eeg);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                
-            }
+            eegChangedDelegate(eeg);
         }
     }
 
@@ -173,25 +208,14 @@ namespace Enter.Assets.Scripts
     /// </summary>
     public class HeartRateDataCallback : AndroidJavaProxy
     {
-        
+        public event OnHRChanged hrChangedDelegate;
         public HeartRateDataCallback() : base("kotlin.jvm.functions.Function1")
         {
             
         }
         public void invoke(int hr)
         {
-            // 心率数据传到情感云上
-            try
-            {
-                // if (AffectiveManager.instance.bIsInit())
-                // {   
-                //     AffectiveManager.instance.appendHeartRate(hr);
-                // }
-            }
-            catch (System.Exception ex)
-            {
-                
-            }
+            hrChangedDelegate(hr);
 
         }
     }

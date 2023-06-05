@@ -60,7 +60,7 @@ namespace Enter.Assets.Scripts
 
                 using (var affectiveObject = new AndroidJavaObject(ENTER_AFFECTIVE_PARAM))
                 {
-                    // 构造器写法 此处订阅了注意力和和谐度，更多请查看回车情感云文档
+                    // 构造器写法 此处订阅了注意力和放松压力值，更多请查看回车情感云文档
                     affectiveSubscribe = affectiveObject.Call<AndroidJavaObject>("requestAttention")
                                                         .Call<AndroidJavaObject>("requestRelaxation")
                                                         .Call<AndroidJavaObject>("requestPressure")
@@ -69,25 +69,7 @@ namespace Enter.Assets.Scripts
                     affectiveService.Call<bool>("add", serviceEnum.GetStatic<AndroidJavaObject>("RELAXATION"));
                     affectiveService.Call<bool>("add", serviceEnum.GetStatic<AndroidJavaObject>("PRESSURE"));
                 }
-                // debugDelegate("0");
-                // using (var algorithmParamsEEG = new AndroidJavaObject(ENTER_EEG_PARAM))
-                // {
-                //     debugDelegate("0.0");
-                //     var filterParam = new AndroidJavaClass(ENTER_EEG_FILTER_MODE);
-                //     debugDelegate("0.1");
-                //     var filterMode = filterParam.GetStatic<AndroidJavaObject>("HARD");
-                //     debugDelegate("0.2");
-                //     eegParam = algorithmParamsEEG.Call<AndroidJavaObject>("filterMode",filterMode)
-                //     .Call<AndroidJavaObject>("build");
-                // }
-                // debugDelegate("1");
-                // using (var algorithmParams = new AndroidJavaObject(ENTER_CLOUD_PARAM))
-                // {
-                //     debugDelegate("1.0");
-                //     cloudParam = algorithmParams.Call<AndroidJavaObject>("eeg", eegParam)
-                //     .Call<AndroidJavaObject>("build");
-                //     debugDelegate("1.1");
-                // }
+
 
                 // 完成配置项， 情感云配置内容在 ‘AffectiveConfig’
                 using (var configObject = new AndroidJavaObject(ENTER_AFFECTIVE_CONFIG,
@@ -100,7 +82,6 @@ namespace Enter.Assets.Scripts
                     .Call<AndroidJavaObject>("availableAffectiveServices", affectiveService)
                     .Call<AndroidJavaObject>("biodataSubscribeParams", bioSubscribe)
                     .Call<AndroidJavaObject>("affectiveSubscribeParams", affectiveSubscribe)
-                    // .Call<AndroidJavaObject>("algorithmParams", cloudParam)
                     .Call<AndroidJavaObject>("build");
                 }
                 manager = new AndroidJavaObject(ENTER_AFFECTIVE_MANAGER, affectiveConfig);
@@ -119,9 +100,66 @@ namespace Enter.Assets.Scripts
             {
                 manager.Call("init", callback);
             }
+                    }
+
+        public bool isWebsocketConnect()
+        {
+            try 
+            {
+                if (manager != null)
+                {
+                    bool value = manager.Get<AndroidJavaObject>("mApi").Call<bool>("isWebSocketOpen");
+                    
+                    return value;
+                }
                 
+            } catch (Exception ex) 
+            {
+                debugDelegate(ex.Message);
+            }
+            return false;
         }
 
+
+        public bool isSessionCreate() 
+        {
+            try 
+            {
+                if (manager != null)
+                {
+                    bool value = manager.Get<AndroidJavaObject>("mApi").Call<bool>("isSessionCreated");
+                    
+                    return value;
+                }
+                
+            } catch (Exception ex) 
+            {
+                debugDelegate(ex.Message);
+            }
+            return false;
+        }
+
+        public string getSessionId()
+        {
+            try 
+            {
+                if (manager != null)
+                {
+                    string value = manager.Get<AndroidJavaObject>("mApi").Call<string>("getSessionId");
+                      return value;
+                }
+                
+            } catch (Exception ex) 
+            {
+                debugDelegate(ex.Message);
+            }
+            return null;
+        }
+
+        public string getDeviceUniqueId() 
+        {
+            return SystemInfo.deviceUniqueIdentifier;
+        }
         /// <summary>
         /// 开启情感云
         /// </summary>
@@ -179,7 +217,7 @@ namespace Enter.Assets.Scripts
         /// 添加心率数据
         /// </summary>
         /// <param name="hr"></param>
-        public void appendHR(AndroidJavaObject value)
+        public void appendHR(int value)
         {
             if (manager == null)
             {
@@ -200,7 +238,7 @@ namespace Enter.Assets.Scripts
         /// 添加脑波数据
         /// </summary>
         /// <param name="eeg"></param>
-        public void appendEeg(AndroidJavaObject list)
+        public void appendEEG(AndroidJavaObject list)
         {
             if (manager == null)
             {
@@ -229,7 +267,6 @@ namespace Enter.Assets.Scripts
             }
             try
             {
-                var exampleList = new ArrayList();
                 manager.Call("release", new CloudManagerReleaseCallback());
             }
             catch (Exception ex)
@@ -280,6 +317,15 @@ namespace Enter.Assets.Scripts
             }
         }
 
+        public void getReport(ref CloudManagerReportCallback biodata, ref CloudManagerReportCallback affective) 
+        {
+            if (manager == null)
+            {
+                return;
+            }
+            manager.Call("getBiodataReport", biodata);
+            manager.Call("getAffectiveDataReport", affective);
+        }
 
 
     }

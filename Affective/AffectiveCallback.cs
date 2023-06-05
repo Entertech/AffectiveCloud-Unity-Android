@@ -12,17 +12,13 @@ namespace Enter.Assets.Scripts
     /// </summary>
     public class CloudManagerInitCallback : AndroidJavaProxy
     {
-        Text log;
+        public event OnSessionCreated sessionDelegate;
+        public event OnWebsocketDebug debugDelegate;
         /// <summary>
-        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
-        /// </summary>
-        /// <param name="list">需要获取的信息，此处作为例子</param>
-        /// <param name="obj">安卓的activity界面,用于安卓调试</param>
-        /// <returns></returns>
-        public CloudManagerInitCallback(ref Text text) : base("cn.entertech.affectivecloudsdk.interfaces.Callback")
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示
+        public CloudManagerInitCallback() : base("cn.entertech.affectivecloudsdk.interfaces.Callback")
         {
-            log = text;
+            
         }
 
         /// <summary>
@@ -30,22 +26,22 @@ namespace Enter.Assets.Scripts
         /// </summary>
         public void onError(AndroidJavaObject error)
         {
+            sessionDelegate(false);
             try
             {
                 var message = error.Call<string>("toString");
-                log.text = message;
+                debugDelegate(message);
 
             }
             catch (Exception ex)
             {
-
+                debugDelegate(ex.ToString());
             }
         }
 
         public void onSuccess()
         {
-
-            log.text = "Get Session";
+            sessionDelegate(true);
         }
     }
 
@@ -57,9 +53,6 @@ namespace Enter.Assets.Scripts
         public event OnWebsocketDebug debugDelegate;
         /// <summary>
         /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示
-        /// </summary>
-        /// <param name="obj">安卓的activity界面</param>
-        /// <returns></returns>
         public RealtimeBiodataCallback() : base("kotlin.jvm.functions.Function1")
         {
 
@@ -74,54 +67,49 @@ namespace Enter.Assets.Scripts
             try
             {
                 //此处是心率解析
-                // var realtimeHrData = jo.Get<AndroidJavaObject>("realtimeHrData");
-                // if (realtimeHrData != null)
-                // {
-                //     var hrObject = realtimeHrData.Get<AndroidJavaObject>("hr");
-                //     var hr = hrObject.Call<int>("intValue"); //数据为心率数据
+                var realtimeHrData = jo.Get<AndroidJavaObject>("realtimeHrData");
+                if (realtimeHrData != null)
+                {
+                    var hrObject = realtimeHrData.Get<AndroidJavaObject>("hr");
+                    var hr = hrObject.Call<int>("intValue"); //数据为心率数据
+                    // 代理传出去，或者给某个全局变量赋值
 
-                //     var hrvObject = realtimeHrData.Get<AndroidJavaObject>("hrv");
-                //     var hrv = hrvObject.Call<int>("intValue");//心率变异性
-                // }
+                    var hrvObject = realtimeHrData.Get<AndroidJavaObject>("hrv");
+                    var hrv = hrvObject.Call<int>("intValue");//心率变异性
+                    // 代理传出去，或者给某个全局变量赋值
+                }
+                //脑波检测
                 var realtimeEEGData = jo.Get<AndroidJavaObject>("realtimeEEGData");
                 if (realtimeEEGData != null)
                 {
-                    using (var leftObject = realtimeEEGData.Get<AndroidJavaObject>("leftwave"))
+                    using (var leftObject = realtimeEEGData.Get<AndroidJavaObject>("leftwave")) //左脑波
                     {
+                        // 代理传出去，或者给某个全局变量赋值, 解析方法如下
                         int leftCount = leftObject.Call<int>("size");
-
                         for (int i = 0; i < leftCount; i += 2)
                         {
-                            if (AffectiveCloudGloble.SharedInstance.leftEEGList.Count < 120)
-                            {
-                                AffectiveCloudGloble.SharedInstance.leftEEGList.Enqueue(leftObject.Call<AndroidJavaObject>("get", i).Call<int>("intValue"));
-                            }
-
+                            //数据处理
+                            var leftValue = leftObject.Call<AndroidJavaObject>("get", i).Call<int>("intValue");
                         }
                     }
-                    using (var rightObject = realtimeEEGData.Get<AndroidJavaObject>("rightwave"))
-                    {
+                    using (var rightObject = realtimeEEGData.Get<AndroidJavaObject>("rightwave")) //右脑波
+                    {   
+                        // 代理传出去，或者给某个全局变量赋值, 解析方法如下
                         int rightCount = rightObject.Call<int>("size");
                         for (int i = 0; i < rightCount; i += 2)
                         {
-                            if (AffectiveCloudGloble.SharedInstance.leftEEGList.Count < 120)
-                            {
-                                AffectiveCloudGloble.SharedInstance.rightEEGList.Enqueue(rightObject.Call<AndroidJavaObject>("get", i).Call<int>("intValue"));
-                            }
 
+                            //数据处理
+                            var rightValue = rightObject.Call<AndroidJavaObject>("get", i).Call<int>("intValue");
                         }
                     }
-                    using (var quality = realtimeEEGData.Get<AndroidJavaObject>("quality"))
+                    using (var quality = realtimeEEGData.Get<AndroidJavaObject>("quality"))  //信号质量
                     {
-                        AffectiveCloudGloble.SharedInstance.quality = quality.Call<int>("intValue");
-                        if (AffectiveCloudGloble.SharedInstance.quality < 2) {
-                            AffectiveCloudGloble.SharedInstance.ssvepNoneValue += 1;
-                        }
+                        // 代理传出去，或者给某个全局变量赋值, 解析方法如下
+                        int quality = quality.Call<int>("intValue");
                     }
 
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -161,30 +149,16 @@ namespace Enter.Assets.Scripts
                 //  realtimePressureData   压力数据    pressure
                 //  realtimePleasureData   愉悦度数据  pleasure
                 //  realtimeCoherenceData  和谐度     coherence
+                // 这里用注意力举例,解析方法如下: 
                 using (var realtimeAttentionData = jo.Get<AndroidJavaObject>("realtimeAttentionData"))
                 {
                     if (realtimeAttentionData != null)
                     {
                         var attentionObject = realtimeAttentionData.Get<AndroidJavaObject>("attention");
                         var attention = attentionObject.Call<int>("intValue"); //输出的注意力
-                        AffectiveCloudGloble.SharedInstance.attention = attention;
-                        if (AffectiveCloudGloble.SharedInstance.attentionList.Count < 4)
-                            AffectiveCloudGloble.SharedInstance.attentionList.Enqueue(attention);
+                        // 代理传出去，或者给某个全局变量赋值
                     }
 
-                }
-
-                using (var realtimeCoherenceData = jo.Get<AndroidJavaObject>("realtimeRelaxationData"))
-                {
-                    if (realtimeCoherenceData != null)
-                    {
-                        var coherenceObject = realtimeCoherenceData.Get<AndroidJavaObject>("relaxation");
-                        var coherence = coherenceObject.Call<int>("intValue"); //输出的和谐度
-                        AffectiveCloudGloble.SharedInstance.relaxation = coherence;
-                        if (AffectiveCloudGloble.SharedInstance.relaxationList.Count < 4)
-                            AffectiveCloudGloble.SharedInstance.relaxationList.Enqueue(coherence);
-
-                    }
                 }
 
             }
@@ -202,14 +176,9 @@ namespace Enter.Assets.Scripts
     /// </summary>
     public class CloudManagerReleaseCallback : AndroidJavaProxy
     {
-
+        public event OnSessionClosed sessionDelegate;
         /// <summary>
-        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
-        /// 此处可根据业务需求修改参数个数，此处只是传入两个参数作为例子
-        /// </summary>
-        /// <param name="list">需要获取的信息，此处作为例子</param>
-        /// <param name="obj">安卓的activity界面,用于安卓调试</param>
-        /// <returns></returns>
+        /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示
         public CloudManagerReleaseCallback() : base("cn.entertech.affectivecloudsdk.interfaces.Callback")
         {
         }
@@ -226,10 +195,12 @@ namespace Enter.Assets.Scripts
             catch (Exception ex)
             {
             }
+            sessionDelegate();
         }
 
         public void onSuccess()
         {
+            sessionDelegate();
         }
     }
 
@@ -239,7 +210,8 @@ namespace Enter.Assets.Scripts
     /// </summary>
     public class CloudManagerRestoreCallback : AndroidJavaProxy
     {
-        public event OnWebsocketDebug restoreDelegate;
+        public event OnSessionCreated sessionDelegate;
+        public event OnWebsocketDebug debugDelegate;
         /// <summary>
         /// 回调初始化，初始化时可传入参数获取回调内容，或者传入界面进行内容显示，
         /// 此处可根据业务需求修改参数个数
@@ -255,22 +227,52 @@ namespace Enter.Assets.Scripts
         /// </summary>
         public void onError(AndroidJavaObject error)
         {
+            sessionDelegate(false);
             try
             {
                 var message = error.Call<string>("toString");
-                restoreDelegate(message);
+                debugDelegate(message);
             }
             catch (Exception ex)
             {
-                restoreDelegate(ex.Message);
+                debugDelegate(ex.Message);
             }
         }
 
         public void onSuccess()
         {
-            restoreDelegate("Restore success");
+            sessionDelegate(true);
         }
     }
 
+    /// <summary>
+    /// 情感云报表回调
+    /// </summary>
+    public class CloudManagerReportCallback : AndroidJavaProxy
+    {
+        
+        public CloudManagerReportCallback() : base("cn.entertech.affectivecloudsdk.interfaces.Callback2")
+        {
+            
+        }
 
+        /// <summary>
+        /// 回调触发
+        /// </summary>
+        public void onError(AndroidJavaObject error)
+        {
+            try
+            {
+                var message = error.Call<string>("toString");
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        public void onSuccess(AndroidJavaObject javaObj)
+        {
+            // 这里报表解析字段参考情感云说明,解析方法参考上面实时数据
+        }
+    }
 }

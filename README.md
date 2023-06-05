@@ -21,7 +21,6 @@
     ajc = new AndroidJavaClass("com.unity3d.player.UnityPlayer"); // 此处为默认命名, 有些第三方Unity库会修改
     if (ajc == null)
     {
-        debug.text = "Activity not right";
         return;
     }
     try
@@ -32,7 +31,6 @@
     }
     catch (NullReferenceException ex)
     {
-        debug.text = ex.Message;
         return;
     }
 ```
@@ -71,11 +69,15 @@
 - 蓝牙开启服务 `BLEManager.instance.bleProcess(ref rawBrainDataCallback, ref heartRateDataCallback);` 
   - 回调参数参考回调文件
   - 开启服务后, 两个回调方法分别会收到脑波数据和心率数据
+  
 
-
-- 蓝牙关闭服务 `BLEManager.instance.bleStop();`
+- 蓝牙关闭服务 `BLEManager.instance.bleStop(ref rawBrainDataCallback, ref heartRateDataCallback);`
   - 蓝牙不再采集数据, 但是依然连接
 
+- 蓝牙特殊服务监听
+  - 包含断开连接, 佩戴检测, 电量
+  - 添加 `BLEManager.instance.addListener(ref disconnectCall, ref contactCall, ref batteryCall)`
+  - 移除 `BLEManager.instance.removeListener(ref disconnectCall, ref contactCall, ref batteryCall)`
 
 - 蓝牙断开 `BLEManager.instance.bleDisconnect()`
 
@@ -120,28 +122,32 @@
 
 #### AffectiveManager
 以下方法按蓝牙使用的生命周期先后顺序排列
-- 初始化情感云: `AffectiveManager.instance.buildBioDataService();`
-  - 默认开启生物数据“EEG”,”HR“
-  - 默认开启情感数据注意力,放松度,压力值
+``` csharp
+//一，初始化情感云
+AffectiveManager.instance.buildBioDataService();
 
-- 创建服务并认证, `AffectiveManager.instance.createSession(ref cloudInitCallback);`
-  - 回调参数参考回调文件
-  - 这步开始建立数据连接
+//二，创建服务并认证，关于回调，请参考AffectiveCallback.cs内的注释
+AffectiveManager.instance.createSession(ref cloudInitCallback);
 
-- 创建监听, `AffectiveManager.instance.addListener(ref websocketConnectSuccessCallback, ref websocketDisconnectCallback, ref realtimeBiodataCallback, ref realtimeAffectiveDataCallback);`
+//从这里开始,可以获取sessionid
+if (AffectiveManager.instance.isSessionCreate())
+    var sessionID = AffectiveManager.instance.getSessionId();
 
-- 创建debug监听, `AffectiveManager.instance.addDebugListener(ref requestDataCallback, ref responseDataCallback);`
+//三，创建监听，参考WebSocketCallback.cs，和AffectiveCallback.cs注释
+AffectiveManager.instance.addListener(ref websocketConnectSuccessCallback, 
+    ref websocketDisconnectCallback, ref realtimeBiodataCallback, 
+    ref realtimeAffectiveDataCallback)
+    
+//四，从蓝牙的脑波回调和心率回调持续上传数据，相关代码查看BLECallbackDelegate.cs
+AffectiveManager.instance.appendEEG(AndroidJavaObject list);
+AffectiveManager.instance.appendHR(int value);
 
-- 添加EEG数据, `AffectiveManager.instance.appendEeg(AndroidJavaObject list)`
-  - 数据来源: 蓝牙`RawBrainDataCallback`回调
+//五，情感云断开重连，当监听到WebSocketCallback.cs的情感云非正常断开时，重新连接并认证
+AffectiveManager.instance.restore(ref cloudManagerRestoreCallback);
 
-- 添加HR数据, `AffectiveManager.instance.appendHR(AndroidJavaObject value)`
-  - 数据来源: 蓝牙`HeartRateDataCallback`回调
+//六，结束服务
+AffectiveManager.instance.releaseCloud()
 
-- 情感云断开重连, `AffectiveManager.instance.restore(ref cloudManagerRestoreCallback);`
-  - 2分钟没有数据上传则, 本次服务无法被restore
-
-- 结束服务, `AffectiveManager.instance.releaseCloud()`
-  - 结束服务后无法继续上传数据获取数据, 但是没有断开websocket
-
-- 断开Websocket, `AffectiveManager.instance.closeWebSocket()`
+//七，断开情感云
+AffectiveManager.instance.closeWebSocket()
+```
