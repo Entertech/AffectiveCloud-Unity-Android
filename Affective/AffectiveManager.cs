@@ -77,7 +77,7 @@ namespace Enter.Assets.Scripts
                 {
                     affectiveConfig = configObject.Call<AndroidJavaObject>("url", AffectiveConfig.AFFECTIVE_URL)
                     .Call<AndroidJavaObject>("timeout", 10000)
-                    .Call<AndroidJavaObject>("uploadCycle", 1)
+                    .Call<AndroidJavaObject>("uploadCycle", 3)
                     .Call<AndroidJavaObject>("availableBiodataServices", bioService)
                     .Call<AndroidJavaObject>("availableAffectiveServices", affectiveService)
                     .Call<AndroidJavaObject>("biodataSubscribeParams", bioSubscribe)
