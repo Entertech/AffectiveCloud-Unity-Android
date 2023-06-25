@@ -1,5 +1,11 @@
 # 回车情感云Unity集成
 
+## 2023.6.25 更新说明
+- 添加蓝牙配对绑定连接
+    - Android.zip内依赖库更新, 解压后需要将`biomoduleble-1.5.2.aar`覆盖原先1.4.2版本
+    - 需要先到系统蓝牙设置里进行蓝牙绑定
+    - 蓝牙配对连接接口 `BLEManager.instance.bleConnectBonded(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
+
 ## 简介
 回车情感云Unity版本是基于安卓SDK的封装, 使用详情请查看, 附件`Android.zip`中有打包好的SDK, 其中有一些安卓的配置文件内容, 包含依赖库, 权限等
  - 情感云连接API[安卓情感云SDK](https://github.com/Entertech/Enter-AffectiveCloud-Android-SDK), 
@@ -64,6 +70,9 @@
 - 蓝牙连接 `BLEManager.instance.bleScanAndConnect(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
   - 回调参数参考回调文件
   - 蓝牙连接成功后,设备灯会由闪烁变为常亮
+  - 添加蓝牙配对绑定连接
+    - 需要先到系统蓝牙设置里进行蓝牙绑定
+    - 蓝牙配对连接接口 `BLEManager.instance.bleConnectBonded(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
 
 
 - 蓝牙开启服务 `BLEManager.instance.bleProcess(ref rawBrainDataCallback, ref heartRateDataCallback);` 

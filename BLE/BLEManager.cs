@@ -150,6 +150,47 @@ namespace Enter.Assets.Scripts
         }
 
         /// <summary>
+        /// 蓝牙连接绑定的设备, 需要先进行系统蓝牙绑定
+        /// </summary>
+        /// <param name="bleScanSuccessCallback">蓝牙扫描回调</param>
+        /// <param name="bleScanFailedCallback">蓝牙未扫描到回调</param>
+        /// <param name="connectSuccessCallback">连接成功回调</param>
+        /// <param name="connectFailedCallback">连接失败回调</param>
+        /// <param name="currentActivity"></param>
+        public void bleConnectBonded(ref BleScanSuccessCallback bleScanSuccessCallback,
+                                    ref BleScanFailedCallback bleScanFailedCallback,
+                                    ref ConnectSuccessCallback connectSuccessCallback,
+                                    ref ConnectFailedCallback connectFailedCallback
+                                    )
+        {
+            debugDelegate("start connect");
+            if (ble != null)
+            {
+                try
+                {
+                    //开始扫描并连接设备
+                    ble.Call("scanNearDeviceAndConnect",
+                    bleScanSuccessCallback,
+                    bleScanFailedCallback,
+                    connectSuccessCallback,
+                    connectFailedCallback, 1);
+                }
+                catch (Exception ex)
+                {
+                    // 进行异常处理
+                    debugDelegate(ex.Message);
+                }
+
+            }
+            else
+            {
+                debugDelegate("ble is null");
+                // 进行异常处理
+
+            }
+        }
+
+        /// <summary>
         /// 断开蓝牙
         /// </summary>
         public void bleDisconnect()
