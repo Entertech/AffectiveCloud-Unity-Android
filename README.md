@@ -2,7 +2,7 @@
 
 ## 2023.6.25 更新说明
 - 添加蓝牙配对绑定连接
-    - Android.zip内依赖库更新, 解压后需要将`biomoduleble-1.5.2.aar`覆盖原先1.4.2版本
+    - Android.zip内依赖库更新, 解压后需要将`biomoduleble-1.5.2.aar`放到对应文件夹内, 删除`biomoduleble-1.4.2.aar`
     - 需要先到系统蓝牙设置里进行蓝牙绑定
     - 蓝牙配对连接接口 `BLEManager.instance.bleConnectBonded(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
 
