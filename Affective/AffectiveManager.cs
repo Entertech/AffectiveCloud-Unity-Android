@@ -12,7 +12,8 @@ namespace Enter.Assets.Scripts
         private static string ENTER_AFFECTIVE_PARAM = "cn.entertech.affectivecloudsdk.AffectiveSubscribeParams$Builder";
         private static string ENTER_EEG_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParamsEEG$Builder";
         // private static string ENTER_EEG_FILTER_MODE = "cn.entertech.affectivecloudsdk.AlgorithmParamsEEG$FilterMode";
-        // private static string ENTER_CLOUD_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParams$Builder";
+        private static string ENTER_CLOUD_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParams$Builder";
+        private static string ENTER_EEG_POWER_MODE = "cn.entertech.affectivecloudsdk.AlgorithmParams$PowerMode";
         private static string ENTER_SERVICE_ENUM = "cn.entertech.affectivecloudsdk.entity.Service";
         public AndroidJavaObject manager = null;
         public event OnWebsocketDebug debugDelegate;
