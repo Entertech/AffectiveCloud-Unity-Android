@@ -10,7 +10,7 @@ namespace Enter.Assets.Scripts
         private static string ENTER_BIODATA_PARAM = "cn.entertech.affectivecloudsdk.BiodataSubscribeParams$Builder";
         private static string ENTER_AFFECTIVE_CONFIG = "cn.entertech.affectivecloudsdk.EnterAffectiveCloudConfig$Builder";
         private static string ENTER_AFFECTIVE_PARAM = "cn.entertech.affectivecloudsdk.AffectiveSubscribeParams$Builder";
-        // private static string ENTER_EEG_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParamsEEG$Builder";
+        private static string ENTER_EEG_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParamsEEG$Builder";
         // private static string ENTER_EEG_FILTER_MODE = "cn.entertech.affectivecloudsdk.AlgorithmParamsEEG$FilterMode";
         // private static string ENTER_CLOUD_PARAM = "cn.entertech.affectivecloudsdk.AlgorithmParams$Builder";
         private static string ENTER_SERVICE_ENUM = "cn.entertech.affectivecloudsdk.entity.Service";
@@ -70,6 +70,23 @@ namespace Enter.Assets.Scripts
                     affectiveService.Call<bool>("add", serviceEnum.GetStatic<AndroidJavaObject>("PRESSURE"));
                 }
 
+                using (var algorithmParamsEEG = new AndroidJavaObject(ENTER_EEG_PARAM))
+                {
+                    var powerMode = new AndroidJavaClass(ENTER_EEG_POWER_MODE);
+
+                    var powerModeDB = powerMode.GetStatic<AndroidJavaObject>("DB");
+
+                    eegParam = algorithmParamsEEG.Call<AndroidJavaObject>("powerMode",powerModeDB)
+                    .Call<AndroidJavaObject>("build");
+                }
+
+                using (var algorithmParams = new AndroidJavaObject(ENTER_CLOUD_PARAM))
+                {
+
+                    cloudParam = algorithmParams.Call<AndroidJavaObject>("eeg", eegParam)
+                    .Call<AndroidJavaObject>("build");
+  
+                }
 
                 // 完成配置项， 情感云配置内容在 ‘AffectiveConfig’
                 using (var configObject = new AndroidJavaObject(ENTER_AFFECTIVE_CONFIG,
@@ -82,6 +99,7 @@ namespace Enter.Assets.Scripts
                     .Call<AndroidJavaObject>("availableAffectiveServices", affectiveService)
                     .Call<AndroidJavaObject>("biodataSubscribeParams", bioSubscribe)
                     .Call<AndroidJavaObject>("affectiveSubscribeParams", affectiveSubscribe)
+                    .Call<AndroidJavaObject>("algorithmParams", cloudParam)
                     .Call<AndroidJavaObject>("build");
                 }
                 manager = new AndroidJavaObject(ENTER_AFFECTIVE_MANAGER, affectiveConfig);
