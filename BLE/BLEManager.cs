@@ -30,7 +30,7 @@ namespace Enter.Assets.Scripts
         /// 安卓如果没有定位权限无法开启蓝牙，所以首次只会开启定位权限
         public void requestAuth()
         {
-            
+
             try
             {
                 var bluetooth = new AndroidJavaClass("android.bluetooth.BluetoothAdapter");//获得Android BluetoothAdapter类
@@ -67,10 +67,13 @@ namespace Enter.Assets.Scripts
             {
                 return false;
             }
-            if (currentActivity == null) {
+            if (currentActivity == null)
+            {
                 debugDelegate("currentActivity is null");
                 return false;
-            } else {
+            }
+            else
+            {
                 active = currentActivity;
             }
             if (ble == null)
@@ -81,7 +84,7 @@ namespace Enter.Assets.Scripts
                     AndroidJavaClass ajc = new AndroidJavaClass(ENTER_BLE_MANAGER);
                     var companion = ajc.GetStatic<AndroidJavaObject>("Companion");
                     ble = companion.Call<AndroidJavaObject>("getInstance", active);
-                    
+
 
                 }
                 catch (Exception ex)
@@ -199,36 +202,47 @@ namespace Enter.Assets.Scripts
         }
 
         ///添加监听
-        public void addListener(ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
+        public void addListener(ref RawBrainDataCallback rawBrainDataCallback, ref HeartRateDataCallback heartRateDataCallback, ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
         {
+            if (ble == null)
+            {
+                // 未初始化，进行异常处理
+                return;
+            }
             try
             {
                 ble.Call("addDisConnectListener", disCall);
                 ble.Call("addConnectListener", contactCall);
                 ble.Call("addBatteryVoltageListener", batteryCall);
+                ble.Call("addRawDataListener4CSharp", rawBrainDataCallback);
+                ble.Call("addHeartRateListener", heartRateDataCallback);
             }
             catch (Exception ex)
             {
                 // 进行异常处理
                 debugDelegate(ex.Message);
             }
-            
+
         }
         /// 移除监听
-        public void removeListener(ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
+        public void removeListener(ref RawBrainDataCallback rawBrainDataCallback, ref HeartRateDataCallback heartRateDataCallback, ref DisconnectCallback disCall, ref ContactCallback contactCall, ref BatteryCallback batteryCall)
         {
+            if (ble == null)
+            {
+                // 未初始化，进行异常处理
+                return;
+            }
             ble.Call("removeDisConnectListener", disCall);
             ble.Call("removeContactListener", contactCall);
             ble.Call("removeBatteryVoltageListener", batteryCall);
+            ble.Call("removeRawDataListener4CSharp", rawBrainDataCallback);
+            ble.Call("removeHeartRateListener", heartRateDataCallback);
         }
 
         /// <summary>
         /// 开启蓝牙服务
         /// </summary>
-        /// <param name="rawBrainDataCallback"></param>
-        /// <param name="heartRateDataCallback"></param>
-        public void bleProcess(ref RawBrainDataCallback rawBrainDataCallback, ref HeartRateDataCallback heartRateDataCallback
-                            )
+        public void bleProcess()
         {
             if (ble == null)
             {
@@ -236,24 +250,14 @@ namespace Enter.Assets.Scripts
                 return;
             }
 
-            ble.Call("addRawDataListener4CSharp", rawBrainDataCallback);
-            try
-            { 
-                ble.Call("addHeartRateListener", heartRateDataCallback);
-            }
-            catch (Exception e)
-            {  
-                debugDelegate(e.ToString());
-            }
             ble.Call("startHeartAndBrainCollection");
 
         }
 
         /// <summary>
         /// 停止蓝牙服务
-        /// 传入参数为bleProcess的参数
         /// </summary>
-        public void bleStop(ref RawBrainDataCallback rawBrainDataCallback, ref HeartRateDataCallback heartRateDataCallback)
+        public void bleStop()
         {
             if (ble == null)
             {
@@ -261,15 +265,7 @@ namespace Enter.Assets.Scripts
                 return;
             }
 
-            ble.Call("removeRawDataListener4CSharp", rawBrainDataCallback);
-            try
-            { 
-                ble.Call("removeHeartRateListener", heartRateDataCallback);
-            }
-            catch (Exception e)
-            {  
-                debugDelegate(e.ToString());
-            }
+
             ble.Call("stopHeartAndBrainCollection");
         }
 

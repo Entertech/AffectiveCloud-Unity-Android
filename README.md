@@ -75,18 +75,18 @@
     - 蓝牙配对连接接口 `BLEManager.instance.bleConnectBonded(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
 
 
-- 蓝牙开启服务 `BLEManager.instance.bleProcess(ref rawBrainDataCallback, ref heartRateDataCallback);` 
+- 蓝牙开启服务 `BLEManager.instance.bleProcess();` 
   - 回调参数参考回调文件
   - 开启服务后, 两个回调方法分别会收到脑波数据和心率数据
   
 
-- 蓝牙关闭服务 `BLEManager.instance.bleStop(ref rawBrainDataCallback, ref heartRateDataCallback);`
+- 蓝牙关闭服务 `BLEManager.instance.bleStop();`
   - 蓝牙不再采集数据, 但是依然连接
 
-- 蓝牙特殊服务监听
-  - 包含断开连接, 佩戴检测, 电量
-  - 添加 `BLEManager.instance.addListener(ref disconnectCall, ref contactCall, ref batteryCall)`
-  - 移除 `BLEManager.instance.removeListener(ref disconnectCall, ref contactCall, ref batteryCall)`
+- 蓝牙服务监听
+  - 包含脑波, 心率, 断开连接, 佩戴检测, 电量
+  - 添加 `BLEManager.instance.addListener(ref rawBrainDataCallback, ref heartRateDataCallback, ref disconnectCall, ref contactCall, ref batteryCall)`
+  - 移除 `BLEManager.instance.removeListener(ref rawBrainDataCallback, ref heartRateDataCallback, ref disconnectCall, ref contactCall, ref batteryCall)`
 
 - 蓝牙断开 `BLEManager.instance.bleDisconnect()`
 
