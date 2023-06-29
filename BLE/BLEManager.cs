@@ -269,7 +269,7 @@ namespace Enter.Assets.Scripts
             ble.Call("stopHeartAndBrainCollection");
         }
 
-        public bool bIsConnected = false;
+        
 
     }
 
