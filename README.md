@@ -32,7 +32,7 @@
     try
     {
 
-        ajo = ajc.GetStatic<AndroidJavaObject>("instance");
+        ajo = ajc.GetStatic<AndroidJavaObject>("currentActivity");
 
     }
     catch (NullReferenceException ex)
