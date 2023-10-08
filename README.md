@@ -157,6 +157,6 @@ AffectiveManager.instance.restore(ref cloudManagerRestoreCallback);
 //六，结束服务
 AffectiveManager.instance.releaseCloud()
 
-//七，断开情感云
+//七，断开情感云, 如果需要在上面的结束服务命令后断开, 需要等待ReleaseCallback返回
 AffectiveManager.instance.closeWebSocket()
 ```
