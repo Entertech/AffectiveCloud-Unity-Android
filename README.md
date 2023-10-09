@@ -7,7 +7,7 @@
     - 蓝牙配对连接接口 `BLEManager.instance.bleConnectBonded(ref bleScanSuccessCallback, ref bleScanFailedCallback, ref connectSuccessCallback, ref connectFailedCallback);` 
 
 ## 简介
-回车情感云Unity版本是基于安卓SDK的封装, 只能用于安卓平台的Unity开发, 附件`Android.zip`中有打包好的SDK, 其中有一些安卓的配置文件内容, 包含依赖库, 权限等. 如需要自行封装请查看:
+回车情感云Unity版本是基于安卓SDK的封装, 只能用于安卓平台的Unity开发, 附件`Android.zip`中有打包好的SDK, 其中有一些安卓的配置文件内容, 包含依赖库, 权限等. 需要解压后放到`Assets/Plugins`文件夹下。 如需要自行封装请查看:
  - 情感云连接API[安卓情感云SDK](https://github.com/Entertech/Enter-AffectiveCloud-Android-SDK), 
  - 蓝牙使用API[安卓蓝牙SDK](https://github.com/Entertech/Enter-Biomodule-BLE-Android-SDK), 
  - [安卓SDK集成Demo](https://github.com/Entertech/Enter-AffectiveCloud-Demo-Android)
