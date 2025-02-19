@@ -138,7 +138,7 @@ AffectiveManager.instance.buildBioDataService();
 //二，创建服务并认证，关于回调，请参考AffectiveCallback.cs内的注释
 AffectiveManager.instance.createSession(ref cloudInitCallback);
 
-//从这里开始,可以获取sessionid
+//CloudManagerInitCallback cloudInitCallback 返回成功后,可以获取sessionid
 if (AffectiveManager.instance.isSessionCreate())
     var sessionID = AffectiveManager.instance.getSessionId();
 
